@@ -27,12 +27,14 @@ set cpo&vim
 "endif
 
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
+
 function! s:ReadFile(filePath)
   for line in readfile(a:filePath, '', 10)
     if line =~ 'source' | echo line | endif
     echo 'robcsi'
   endfor
 endfunction
+
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
 
 "the new way
@@ -45,7 +47,6 @@ if g:viewmaps_map_keys
 endif
 
 "the old way (help)
-
 if !hasmapto('<Plug>ViewmapsReadfile')
   map <unique> <Leader>M  <Plug>ViewmapsReadfile
 endif
