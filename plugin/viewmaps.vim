@@ -13,13 +13,25 @@ let g:loaded_viewmaps = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+"if !exists("s:did_load")
+
+  "if !exists(":ViewMaps")
+    "let s:currentFile = expand("$MYVIMRC")
+    "echo s:currentFile
+    "command -nargs=0  ViewMaps  :call s:ReadFile(s:currentFile)
+  "endif
+
+  "let s:did_load = 1
+  ""exe 'au FuncUndefined s:ReadFile* source ' . expand('<sfile>')
+  "finish
+"endif
+
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 function! s:ReadFile(filePath)
-  let currentFile = expand("$MYVIMRC")
-  for line in readfile(currentFile, '', 10)
+  for line in readfile(a:filePath, '', 10)
     if line =~ 'source' | echo line | endif
+    echo 'robcsi'
   endfor
-  echo currentFile
 endfunction
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
 
@@ -29,7 +41,7 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :call <sid>ReadFile()<CR>
+    nnoremap <leader>d :call <sid>ReadFile(s:currentFile)<CR>
 endif
 
 "the old way (help)
@@ -39,10 +51,12 @@ if !hasmapto('<Plug>ViewmapsReadfile')
 endif
 noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>ReadFile
 
-noremap <Plug>ReadFile  :call <SID>Readfile()<CR>
+noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
 
 if !exists(":ViewMaps")
-  command -nargs=0  ViewMaps  :call s:ReadFile("afsf")
+  let s:currentFile = expand("$MYVIMRC")
+  echo s:currentFile
+  command -nargs=0  ViewMaps  :call s:ReadFile(s:currentFile)
 endif
 
 let &cpo = s:save_cpo
