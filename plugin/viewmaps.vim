@@ -57,7 +57,7 @@ noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
 if !exists(":ViewMaps")
   let s:currentFile = expand("$MYVIMRC")
   echo s:currentFile
-  command -nargs=0  ViewMaps  :call s:ReadFile(s:currentFile)
+  command -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
 endif
 
 let &cpo = s:save_cpo
