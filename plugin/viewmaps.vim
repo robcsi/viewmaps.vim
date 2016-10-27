@@ -28,6 +28,9 @@ set cpo&vim
 
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 
+let s:mappingTypes = ['i', 'n', 'v', 'c', 's', 'x', 'o', '!', 'l']
+echo s:mappingTypes
+
 function! s:ReadFile(filePath)
   for line in readfile(a:filePath, '', 10)
     if line =~ 'source' | echo line | endif
@@ -43,7 +46,7 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :call <sid>ReadFile(s:currentFile)<CR>
+    nnoremap <leader>d :call <sid>ReadFile(expand("$MYVIMRC"))<CR>
 endif
 
 "the old way (help)
@@ -57,7 +60,7 @@ noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
 if !exists(":ViewMaps")
   let s:currentFile = expand("$MYVIMRC")
   echo s:currentFile
-  command -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
+  command! -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
 endif
 
 let &cpo = s:save_cpo
