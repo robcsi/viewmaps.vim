@@ -1,0 +1,599 @@
+"not compatible mode with Vi
+set nocompatible
+
+"using pathogen - it is added to a directory in the bundle, like any other plugin
+"these lines must be added before any filetype setting
+runtime bundle/vim-pathogen/autoload/pathogen.vim
+execute pathogen#infect()
+
+set guioptions=c
+
+filetype on
+filetype plugin on
+filetype indent on
+
+"enable syntax and toggle it to on
+syntax enable
+syntax on
+set t_Co=256
+
+set noswapfile
+
+"Windows specific settings
+if has("win32")
+    "source $VIMRUNTIME/vimrc_example.vim
+    "source $VIMRUNTIME/mswin.vim
+    "behave mswin
+
+    "x on an English Windows version. n on a French one
+    au GUIEnter * simalt ~x 
+
+    "Perforce revert, edit and add command
+    "!start runs a command without supressing VIm and waiting for a keypress
+    "http://vim.wikia.com/wiki/Execute_external_programs_asynchronously_under_Windows
+    "nnoremap <C-S-Ins> :!start cmd /c "C:\Program files\Perforce\p4.exe" add %<CR>
+    "nnoremap <C-S-A-Ins> :!start cmd /c "C:\Program files\Perforce\p4.exe" edit %<CR>
+    "nnoremap <C-S-Del> :!start cmd /c "C:\Program files\Perforce\p4.exe" delete %<CR>
+    "nnoremap <C-S-A-Del> :!start cmd /c "C:\Program files\Perforce\p4.exe" revert %<CR>
+
+    " Tell vim to remember certain things when we exit
+    "  '10  :  marks will be remembered for up to 10 previously edited files
+    "  "100 :  will save up to 100 lines for each register
+    "  :20  :  up to 20 lines of command-line history will be remembered
+    "  %    :  saves and restores the buffer list
+    "  n... :  where to save the viminfo files
+
+    set viminfo=h,<500,'1000,\"100,:20,%,nc:\\temp\\.vim\\_viminfo
+
+    set undodir=c:\temp\.vim\undodir
+    set backupdir=c:\temp\.vim
+    set directory=c:\temp\.vim
+
+    "setting gui font
+    set guifont=Consolas:h10b:cANSI
+
+    set tags=./tags,tags
+else
+"*nix specific settings
+    set undodir=~/.vim/undodir
+    set backupdir=~/.vim
+    set directory=~/.vim
+
+    "setting the default font
+    "http://vim.wikia.com/wiki/Change_font
+    set guifont=Monospace\ Bold\ 8
+
+    set viminfo=h,<500,'1000,\"100,:20,%,n~/_viminfo
+
+    set tags=./tags,tags
+endif
+
+"restoring the last cursor position
+augroup resCur
+  autocmd!
+  autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
+augroup END
+
+" Don't use Ex mode, use Q for formatting
+vnoremap Q gq
+nnoremap Q gqap
+
+"colors and gui settings
+if has("gui_running")
+    "colorscheme solarized
+    "set background=light
+else
+    colorscheme desert
+    set background=dark
+endif
+
+colorscheme primary
+set background=light
+
+"solarized colorscheme settings
+"default value is normal
+let g:solarized_contrast="high"
+"default value is normal
+let g:solarized_visibility="high"
+"default value is 1
+let g:solarized_italic=0
+
+"no highlight search as default
+set nohlsearch
+
+"always nowrap text
+set nowrap
+
+" Show (partial) command in status line.
+set showcmd		    
+" Show matching brackets.
+set showmatch
+" Do case insensitive matching
+set ignorecase
+" Do smart case matching
+set smartcase
+" Incremental search
+set incsearch		
+" Automatically save before commands like :next and :make
+set autowrite		
+
+"Taken from here: http://items.sjbach.com/319/configuring-vim-right
+" Hide buffers when they are abandoned
+set hidden          
+" Enable mouse usage (all modes)
+set mouse=a
+
+"use indentation of previous line
+set autoindent
+" use intelligent indentation for C
+set smartindent
+"show matching paranthesis
+set showmatch                   
+" display the current mode
+set showmode                    
+
+" highlight current column
+"set cursorcolumn
+" highlight bg color of current line
+hi cursorline guibg=#333333     
+" highlight cursor
+hi cursorcolumn guibg=#333333
+
+"enable cursorline
+set nocursorline
+
+"set verbose=1
+
+" OmniCppComplete
+" override built-in C omnicomplete with C++ OmniCppComplete plugin
+set omnifunc=syntaxcomplete#Complete 
+let OmniCpp_NamespaceSearch = 1
+" autocomplete after .
+let OmniCpp_MayCompleteDot = 1
+" autocomplete after ->
+let OmniCpp_MayCompleteArrow = 1
+" autocomplete after ::
+let OmniCpp_MayCompleteScope = 1
+let OmniCpp_GlobalScopeSearch   = 0
+let OmniCpp_DisplayMode         = 1
+" do not show namespace in pop-up
+let OmniCpp_ShowScopeInAbbr     = 0
+" show prototype in pop-up
+let OmniCpp_ShowPrototypeInAbbr = 0
+" show access in pop-up
+let OmniCpp_ShowAccess          = 1
+" select first item in pop-up
+let OmniCpp_SelectFirstItem     = 2
+" automatically open and close the popup menu / preview window
+" au CursorMovedI,InsertLeave * if pumvisible() == 0|silent! pclose|endif
+set completeopt=menuone,menu,longest
+
+" SuperTab settings
+let g:SuperTabDefaultCompletionType = "context"
+let g:SuperTabContextDefaultCompletionType = "<C-n>"
+let g:SuperTabLongestHighlight = 1
+let g:SuperTabLongestEnhanced = 1
+
+" function for calling Ctags on current directory
+function! UpdateTags()
+  "execute ":!ctags -R --fields=+liaS --c-kinds=+p --c++-kinds=+p --sort=yes --tag-relative --extra=+q ."
+  "echohl StatusLine | echo "C/C++/C\# tag updated" | echohl None
+  execute ":!ctags -R"
+  echohl StatusLine | echo "Tags updated" | echohl None
+endfunction
+nnoremap <F4> :call UpdateTags()<CR>
+
+"automatically change directory when opening a file
+set autochdir
+" Switch pwd to whichever file I'm current editing
+autocmd BufEnter * lcd %:p:h 
+
+nnoremap ' `
+nnoremap ` '
+
+"for gundo plugin
+set undofile
+set undolevels=100
+
+set history=1000
+
+"use extended matching
+runtime macros/matchit.vim
+
+set title
+
+set nobackup
+set writebackup
+
+"scroll by 3 lines
+nnoremap <C-e> 3<C-e>
+nnoremap <C-y> 3<C-y>
+vnoremap <C-e> 3<C-e>
+vnoremap <C-y> 3<C-y>
+
+set ruler
+
+"set visualbell
+
+set backspace=indent,eol,start
+
+"Taken from: http://vim.wikia.com/wiki/Example_vimrc
+set nostartofline
+
+"yank to the end of the line
+nnoremap Y y$
+
+"Taken from: http://amix.dk/vim/vimrc.html
+set scrolloff=7
+
+"autoread file when it has changed
+set autoread
+
+" Smart way to move between windows
+nnoremap <C-j> <C-W>j
+nnoremap <C-k> <C-W>k
+nnoremap <C-h> <C-W>h
+nnoremap <C-l> <C-W>l
+
+"http://vim.wikia.com/wiki/Folding
+"set foldmethod=marker
+set foldmethod=manual
+inoremap <F9> <C-O>za
+nnoremap <F9> za
+onoremap <F9> <C-C>za
+vnoremap <F9> zf
+
+" tab navigation like firefox - http://vim.wikia.com/wiki/Alternative_tab_navigation
+nnoremap <C-S-tab> :tabprevious<CR>
+nnoremap <C-tab>   :tabnext<CR>
+nnoremap <C-t>     :tabnew<CR>
+inoremap <C-S-tab> <Esc>:tabprevious<CR>i
+inoremap <C-tab>   <Esc>:tabnext<CR>i
+inoremap <C-t>     <Esc>:tabnew<CR>
+nnoremap <C-Delete> :tabclose<CR>
+
+" move through word wrapped line
+nnoremap k gk
+nnoremap j gj
+
+" to support Unicode fully
+set enc=utf-8
+
+" Source the vimrc file after saving it
+if has("autocmd")
+    augroup VimrcSo
+        au!
+
+        autocmd! bufwritepost $MYVIMRC source $MYVIMRC
+    augroup END
+endif
+
+" easily open the vimrc in a new tab
+nmap <leader>v :tabedit $MYVIMRC<CR>
+
+"width of the fold column
+set foldcolumn=4
+
+"number of characters at which VIM will start scrolling horizontally when text
+"is not wrapped
+set sidescroll=10
+set sidescrolloff=10
+
+"show tabs and trailing spaces when using :set list nicer
+set listchars=eol:¬,tab:>·,trail:~,extends:>,precedes:<
+
+" Always show the status line
+set laststatus=2
+
+" https://github.com/bling/vim-airline/tree/dev#smarter-tab-line
+let g:airline#extensions#tabline#enabled = 0
+" let g:airline_powerline_fonts = 1
+"let g:airline_theme='dark'
+"autocmd VimEnter * :AirlineRefresh
+
+"setting numbers and relativenumbers
+set number
+set relativenumber
+
+"settings for path and file searching in project dirs
+"set wildchar=n
+set wildmode=full
+set wildmenu
+"set wildignore=*.dll
+
+"search for only these types of files with find
+set suffixesadd=.h,.c,.hpp,.cpp,.cs,.resx,.xsd,.xml,.csproj,.vcxproj,.sln,.rc,.sch,.imp,.bat
+"set the path variable in Vim
+set path=.,**,,
+
+"Always show the tab bar
+set showtabline=2
+
+" Do not jump to the matching bracket upon bracket insert (default)
+let g:matchparen_insert_timeout=5
+
+" Use the OS clipboard by default
+set clipboard=unnamed
+
+" Use only 1 space after "." when joining lines instead of 2
+set nojoinspaces
+
+"how to deal with TABs: expand them to 4 spaces
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+
+"http://www.youtube.com/watch?v=aHm36-na4-4
+"set textwidth=80
+"call matchadd('ColorColumn', '\%81v', 100)
+
+"Adding Unix and Windows common settings for sessions
+set sessionoptions+=unix,slash
+
+"some settings for TagHighlight plugin
+"autocmd VimEnter * :UpdateTypesFile
+"nnoremap <silent> <leader>u :UpdateTypesFile<CR>
+
+"http://www.reddit.com/r/vim/comments/1qp1su/is_my_ideal_tabwindowbuffer_setup_possible/
+"jump to a buffer where it is instead of right here by using :sb
+set switchbuf=useopen,usetab
+
+"remap TAB to %; easier way to match
+"nnoremap <tab> %
+
+"remap n and N to center next search result, and pulse the line
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+"same for next and previous match
+nnoremap g; g;zz
+nnoremap g, g,zz
+
+"Open quickfix window containing all the matches of a search
+nnoremap <silent> <leader>/ :execute 'vimgrep /'.@/.'/g %'<CR>:botright copen<CR>
+
+"Focus current fold
+nnoremap <leader>z zMzvzz
+
+"Split the line
+nnoremap S i<cr><esc><right>
+
+"toggling paste mode
+set pastetoggle=<F8>
+
+"toggling GUndo plugin
+nnoremap <F3> :GundoToggle<CR>
+
+" switching to alternate file
+nnoremap <leader>a :FSHere<CR>
+
+" visually selects the block of characters you added last time you were in INSERT mode.
+" highlight last inserted text
+nnoremap gV `[v`]
+
+set lazyredraw
+
+"http://www.reddit.com/r/vim/comments/2362q1/let_mapleader_now_how_do_i_get_rid_of_that_delay/
+augroup FastEscape
+    autocmd!
+    au InsertEnter * set timeoutlen=0
+    au InsertLeave * set timeoutlen=1000
+augroup END
+
+" project.vim settings
+let g:proj_window_increment = 100
+let g:proj_window_width = 40
+let g:proj_flags = "imstgTSLn"
+nnoremap <silent> <Leader>p :Project<CR> | :set winfixwidth
+
+" vim-notes settings
+"if has("win32")
+    "let g:notes_directories = ['c:\stuff\notes\']
+"else
+    "let g:notes_directories = ['~/notes/', '~/notes/personal']
+"endif
+"let g:notes_suffix = '.note'
+
+" CtrlSpace settings
+nnoremap <silent><C-p> :CtrlSpace O<CR>
+let g:ctrlspace_show_tab_info = 1
+let g:ctrlspace_show_key_info = 1
+let g:ctrlspace_show_unnamed = 1
+let g:ctrlspace_use_horizontal_splits = 1
+let g:CtrlSpaceProjectRootMarkers = [".git", ".hg", ".svn", ".bzr", "_darcs", "CVS", ".sln"]
+let g:CtrlSpaceUseUnicode = 0
+let g:CtrlSpaceLoadLastWorkspaceOnStart = 1
+let g:CtrlSpaceSaveWorkspaceOnSwitch = 1
+let g:CtrlSpaceSaveWorkspaceOnExit = 1
+let g:CtrlSpaceSearchTiming = 500
+let g:CtrlSpaceFileEngine = "auto"
+if executable("ag")
+    let g:CtrlSpaceGlobCommand = 'ag -l --nocolor -g ""'
+endif
+"colors
+"hi CtrlSpaceSelected term=reverse ctermfg=187  ctermbg=23  cterm=bold
+"hi CtrlSpaceNormal   term=NONE    ctermfg=244  ctermbg=232 cterm=NONE
+"hi CtrlSpaceFound    ctermfg=220  ctermbg=NONE cterm=bold
+hi CtrlSpaceSelected term=reverse ctermfg=white ctermbg=black cterm=bold
+hi CtrlSpaceNormal   term=NONE    ctermfg=black ctermbg=228   cterm=NONE
+hi CtrlSpaceFound    ctermfg=125  ctermbg=NONE  cterm=bold
+
+" TagBar settings
+let g:tagbar_width = 60
+let g:tagbar_autoclose = 0
+let g:tagbar_autofocus = 1
+let g:tagbar_compact = 1
+let g:tagbar_show_linenumbers = 1
+"let g:tagbar_expand = 1
+let g:tagbar_autoshowtag = 1
+"let g:tagbar_left = 1
+nnoremap <F2> :TagbarToggle<CR>
+
+" Easytags settings
+""let g:easytags_always_enabled = 1
+"let g:easytags_python_enabled = 1
+"let g:easytags_cmd = 'ctags'
+"if has("win32")
+    "let g:easytags_file = 'c:\temp\.vim\tags'
+"else
+    "let g:easytags_file = '~/.vimtags'
+"endif
+"let g:easytags_include_members = 1
+"set tags=./tags;
+"let g:easytags_dynamic_files = 1
+"let g:easytags_by_filetype = 1
+"let g:easytags_updatetime_warn = 0
+"let g:easytags_async = 1
+"let g:easytags_syntax_keyword = 'always'
+
+"taglist settings
+"let Tlist_Process_File_Always = 1
+"let Tlist_Show_One_File = 0
+"let Tlist_File_Fold_Auto_Close = 1
+"let Tlist_Auto_Update = 1
+"let Tlist_Compact_Format = 0
+"let Tlist_Display_Tag_Scope = 1
+"let Tlist_Enable_Fold_Column = 1
+"let Tlist_GainFocus_On_ToggleOpen = 1
+"let Tlist_Highlight_Tag_On_BufEnter = 1
+"let Tlist_Inc_Winwidth = 0
+"let Tlist_Use_Right_Window = 1
+"let Tlist_Display_Prototype = 0
+"let Tlist_WinWidth = 40
+"let tlist_cpp_settings = 'c++;n:namespace;v:variable;d:macro;t:typedef;c:class;g:enum;s:struct;u:union;f:function;m:member;p:prototype'
+"let tlist_cs_settings = 'c#;n:namespace;v:variable;E:event;t:typedef;c:class;g:enum;s:struct;m:member;f:function;p:prototype;i:interface'
+"let tlist_c_settings = 'c;v:variable;d:macro;t:typedef;g:enum;s:struct;u:union;f:function'
+"nnoremap <silent> <leader>l :TlistToggle<CR>
+
+" descreasing updatetime
+set updatetime=1000
+
+" NERD Tree configurations
+""autocmd VimEnter,BufWinEnter * NERDTreeFind
+""autocmd VimEnter * wincmd l
+""automatic Mirror tree position for every buffer
+""autocmd BufEnter * NERDTreeMirror
+"let NERDTreeAutoCenterThreshold = 999
+"let NERDTreeCaseSensitiveSort = 1
+"let NERDTreeChDirMode = 2
+"let NERDTreeShowBookmarks = 1
+"let NERDTreeShowLineNumbers=1
+"let NERDTreeMinimalUI=1
+""let NERDTreeQuitOnOpen = 1
+"let NERDTreeWinSize = 50
+"let NERDTreeShowHidden = 0
+"let NERDTreeDirArrows=1
+"let NERDTreeAutoDeleteBuffer=1
+"let NERDTreeHijackNetrw = 0
+"nnoremap <silent> <special> <leader>t :NERDTreeToggle %:p:h<RETURN>
+"" Close nerdtree when it's the only buffer left open
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+
+" rainbow_parentheses settings
+" always on
+au VimEnter * RainbowParenthesesActivate
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+au Syntax * RainbowParenthesesLoadChevrons
+
+" syntastic settings
+"set statusline+=%#warningmsg#
+"set statusline+=%{SyntasticStatuslineFlag()}
+"set statusline+=%*
+"let g:syntastic_enable_balloons = 1
+"let g:syntastic_cursor_column = 0
+"let g:syntastic_cpp_checkers = ['cppcheck']
+"let g:syntastic_always_populate_loc_list = 1
+"let g:syntastic_auto_loc_list = 0
+"let g:syntastic_check_on_open = 0
+"let g:syntastic_check_on_wq = 0
+"let g:syntastic_full_redraws = 1
+
+" adding newline before the current line and after
+nnoremap OO O<Esc>
+nnoremap oo o<Esc>
+
+" Unite.vim mappings
+"nnoremap <leader>uf :<C-u>Unite -no-split -buffer-name=Files file<CR>
+"call unite#filters#matcher_default#use(['matcher_fuzzy'])
+"nnoremap <leader>ur :<C-u>Unite -no-split -start-insert -buffer-name=FilesRecursively file_rec<CR>
+"nnoremap <leader>ug :<C-u>Unite -no-split -buffer-name=FilesAndBuffers file buffer<CR>
+"nnoremap <leader>ub :<C-u>Unite -no-split -buffer-name=Buffers buffer<cr>
+"nnoremap <leader>ud :<C-u>Unite -no-split -buffer-name=Register register<cr>
+"nnoremap <leader>uS :<C-u>Unite -no-split -buffer-name=Sources source<cr>
+"nnoremap <leader>um :<C-u>Unite -no-split -buffer-name=Mappings mapping<cr>
+"let g:unite_source_history_yank_enable = 1
+"nnoremap <leader>uy :<C-u>Unite -no-split -buffer-name=YankHistory history/yank<CR>
+"nnoremap <space>/ :Unite -no-split -buffer-name=SearchResults grep:.<cr>
+
+""split in Unite's insert mode
+"autocmd FileType unite call s:unite_my_settings()
+"function! s:unite_my_settings()
+    "" Overwrite settings.
+    "imap <silent><buffer><expr> <C-s> unite#do_action('split')
+    "imap <buffer> jj      <Plug>(unite_insert_leave)
+    "imap <buffer> <C-w>     <Plug>(unite_delete_backward_path)
+"endfunction
+
+" jumping back and forth between matches of */# and centering
+map z' ''zz
+
+" vim-search-pulse config
+"https://github.com/inside/vim-search-pulse
+let g:vim_search_pulse_mode = 'pattern'
+let g:vim_search_pulse_duration = 250
+
+set ttyfast
+
+"autosave when focus is lost
+au FocusLost * :wa
+
+"strip all trailing whitespace in the current file
+nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
+
+"shortcut for SemanticHighlight
+nnoremap <leader>sh :SemanticHighlightToggle<cr>
+
+" shortcuts for wildfire
+nnoremap <leader>sw <Plug>(wildfire-quick-select)
+
+"settings for gutentags
+let g:gutentags_project_root = ['*.sln']
+set statusline+=%{gutentags#statusline('[Generating...]')}
+
+"peekaboo settings
+let g:peekaboo_window = 'vertical botright 80new'
+
+"Ag mapping
+nnoremap <silent> <leader>Ag :AsyncRun Ag <c-r><c-w> .<cr>:botright copen<CR>
+
+"netrw calling shortcut
+nnoremap - :Ex<cr>
+let g:netrw_preview   = 1
+let g:netrw_liststyle = 1
+let g:netrw_winsize   = 30
+
+"shortcut for counting occurence of word under cursor in file
+nnoremap <leader>C :%s/<c-r><c-w>//gn<cr>
+
+"vim-over settings
+nnoremap <leader>o :OverCommandLine<CR>
+
+"vim-operator-flashy settings
+"map y <Plug>(operator-flashy)
+"nmap Y <Plug>(operator-flashy)$
+
+"toggle quickfix
+nnoremap <silent> <F10> :call asyncrun#quickfix_toggle(12)<cr>
+
+" Don't move when you use * 
+nnoremap <silent> * :let stay_star_view = winsaveview()<cr>*:call winrestview(stay_star_view)<cr>
+
+" open help in vertical split directly
+command -nargs=* -complete=help Help vertical belowright help <args>
+

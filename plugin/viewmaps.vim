@@ -28,15 +28,40 @@ set cpo&vim
 
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 
-let s:mappingTypes = ['i', 'n', 'v', 'c', 's', 'x', 'o', '!', 'l']
-let s:mapCommands = ['map', 'imap', 'vmap', 'nmap', 'noremap', 'nnoremap', 'vnoremap']
+"let s:mappingTypes = ['i', 'n', 'v', 'c', 's', 'x', 'o', '!', 'l']
+let s:mapCommands = ['map', 'imap', 'vmap', 'nmap', 'omap', 'noremap', 'nnoremap', 'vnoremap', 'inoremap', 'onoremap']
 
 function! s:ReadFile(filePath)
-  for line in readfile(a:filePath, '', 10)
-    for mapCommand in s:mapCommands
-      if line =~ mapCommand | echo line | endif
+  let s:linesInFile = readfile(a:filePath)
+  let s:lineCount = len(s:linesInFile)
+  let s:lineIndex = 0
+
+  while s:lineIndex < s:lineCount
+    for s:mapCommand in s:mapCommands
+
+      let s:line = get(s:linesInFile, s:lineIndex, '')
+
+      "display mapping
+      if strlen(s:line) > 0 
+        if s:line =~ '^'.s:mapCommand 
+          "display comment if available
+          if s:lineIndex > 0
+            let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
+            if s:previousLine =~ '^"'
+              echo s:previousLine
+            endif
+          endif
+
+          "display mapping line
+          echo s:line 
+
+          "display empty line
+          echo "\n"
+        endif
+      endif
     endfor
-  endfor
+    let s:lineIndex += 1
+  endwhile
 endfunction
 
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
@@ -47,7 +72,7 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :call <sid>ReadFile(expand("$MYVIMRC"))<CR>
+    nnoremap <leader>d :call <sid>ReadFile(expand("vimrc"))<CR>
 endif
 
 "the old way (help)
@@ -59,8 +84,7 @@ noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>ReadFile
 noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
 
 if !exists(":ViewMaps")
-  let s:currentFile = expand("d:/git/.vim/.vimrc")
-  echo s:currentFile
+  let s:currentFile = expand("vimrc")
   command! -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
 endif
 
