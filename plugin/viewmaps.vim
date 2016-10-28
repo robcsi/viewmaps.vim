@@ -1,7 +1,7 @@
 
 " Vim global plugin for displaying mappings from your vimrc
 " Last Change:	2016 Oct. 24
-" Maintainer:	Robert sarkozi <sarkozi.robert@gmail.com>
+" Maintainer:	Robert Sarkozi <sarkozi.robert@gmail.com>
 " License:	This file is placed in the public domain.
 " Version:	0.1.0
 
@@ -13,55 +13,88 @@ let g:loaded_viewmaps = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-"if !exists("s:did_load")
-
-  "if !exists(":ViewMaps")
-    "let s:currentFile = expand("$MYVIMRC")
-    "echo s:currentFile
-    "command -nargs=0  ViewMaps  :call s:ReadFile(s:currentFile)
-  "endif
-
-  "let s:did_load = 1
-  ""exe 'au FuncUndefined s:ReadFile* source ' . expand('<sfile>')
-  "finish
-"endif
-
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 
-"let s:mappingTypes = ['i', 'n', 'v', 'c', 's', 'x', 'o', '!', 'l']
-let s:mapCommands = ['map', 'imap', 'vmap', 'nmap', 'omap', 'noremap', 'nnoremap', 'vnoremap', 'inoremap', 'onoremap']
+" GetConfigFiles - gets vimrc and files sourced by it and returns
+" them in a list
+function! s:GetConfigFiles()
+  let s:vimrc = expand("$MYVIMRC")
 
-function! s:ReadFile(filePath)
-  let s:linesInFile = readfile(a:filePath)
-  let s:lineCount = len(s:linesInFile)
-  let s:lineIndex = 0
+  let s:sourcedRCFiles = add([], s:vimrc)
+  let s:vimrcLines = readfile(s:vimrc)
 
-  while s:lineIndex < s:lineCount
-    for s:mapCommand in s:mapCommands
+  for s:rcFile in s:vimrcLines
+    if s:rcFile =~ "^source"
+      let s:parts = split(s:rcFile)
+      let s:sourcedRCFiles = add(s:sourcedRCFiles, get(s:parts, 1))
+    endif
+  endfor
 
-      let s:line = get(s:linesInFile, s:lineIndex, '')
+  return s:sourcedRCFiles
 
-      "display mapping
-      if strlen(s:line) > 0 
-        if s:line =~ '^'.s:mapCommand 
-          "display comment if available
-          if s:lineIndex > 0
-            let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
-            if s:previousLine =~ '^"'
-              echo s:previousLine
+endfunction
+
+" list of mapping modes - the six major ones
+let s:mappingTypes = ['n', 'i', 'v', 's', 'o', 'c']
+
+" see :h map-overview, map-modes for list of modes and their mappings
+let s:normalModeMapCommands = ['map', 'nm', 'nn']
+let s:insertModeMapCommands = ['im', 'ino']
+let s:visualModeMapCommands = ['map', 'vm', 'vno', 'smap', 'snor', 'xmap', 'xno']
+let s:selectModeMapCommands = ['map', 'smap', 'snor', 'vm', 'vno']
+let s:operatorpendingModeMapCommands = ['map', 'om', 'ono']
+let s:commandlineModeMapCommands = ['cm', 'cno']
+
+" dictionary of mapping modes and their lists of mappings
+let s:mappingModesMap = {'n' : s:normalModeMapCommands, 
+                        \'i' : s:insertModeMapCommands, 
+                        \'v' : s:visualModeMapCommands, 
+                        \'s' : s:selectModeMapCommands, 
+                        \'o' : s:operatorpendingModeMapCommands, 
+                        \'c' : s:commandlineModeMapCommands }
+
+" DisplayMappings - displays all the mappings, filtered by parameters
+function! s:DisplayMappings(mappingMode)
+
+  let s:files = s:GetConfigFiles()
+
+  "get commands of selected mode
+  let s:mapCommands = s:mappingModesMap[a:mappingMode]
+
+  for s:file in s:files
+    echo 'RC File: '.s:file."\n"
+    let s:linesInFile = readfile(s:file)
+    let s:lineCount = len(s:linesInFile)
+    let s:lineIndex = 0
+
+    while s:lineIndex < s:lineCount
+      for s:mapCommand in s:mapCommands
+
+        let s:line = get(s:linesInFile, s:lineIndex, '')
+
+        "display mapping
+        if strlen(s:line) > 0 
+          if s:line =~ '^'.s:mapCommand 
+            "display comment if available
+            if s:lineIndex > 0
+              let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
+              if s:previousLine =~ '^"'
+                echo s:previousLine
+              endif
             endif
+
+            "display mapping line
+            echo s:line 
+
+            "display empty line
+            echo "\n"
           endif
-
-          "display mapping line
-          echo s:line 
-
-          "display empty line
-          echo "\n"
         endif
-      endif
-    endfor
-    let s:lineIndex += 1
-  endwhile
+      endfor
+
+      let s:lineIndex += 1
+    endwhile
+  endfor
 endfunction
 
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
@@ -72,20 +105,19 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :call <sid>ReadFile(expand("vimrc"))<CR>
+    nnoremap <leader>d :call <sid>DisplayMappings()<CR>
 endif
 
 "the old way (help)
 if !hasmapto('<Plug>ViewmapsReadfile')
   map <unique> <Leader>M  <Plug>ViewmapsReadfile
 endif
-noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>ReadFile
+noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>DisplayMappings
 
-noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
+noremap <Plug>DisplayMappings  :call <SID>DisplayMappings()<CR>
 
 if !exists(":ViewMaps")
-  let s:currentFile = expand("vimrc")
-  command! -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
+  command! -nargs=1 ViewMaps :call s:DisplayMappings(<q-args>)
 endif
 
 let &cpo = s:save_cpo
