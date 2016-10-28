@@ -79,12 +79,12 @@ function! s:DisplayMappings(mappingMode)
             if s:lineIndex > 0
               let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
               if s:previousLine =~ '^"'
-                echo s:previousLine
+                echo (s:lineIndex - 1).': '.s:previousLine
               endif
             endif
 
             "display mapping line
-            echo s:line 
+            echo s:lineIndex.': '.s:line 
 
             "display empty line
             echo "\n"
