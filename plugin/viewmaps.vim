@@ -29,12 +29,13 @@ set cpo&vim
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 
 let s:mappingTypes = ['i', 'n', 'v', 'c', 's', 'x', 'o', '!', 'l']
-echo s:mappingTypes
+let s:mapCommands = ['map', 'imap', 'vmap', 'nmap', 'noremap', 'nnoremap', 'vnoremap']
 
 function! s:ReadFile(filePath)
   for line in readfile(a:filePath, '', 10)
-    if line =~ 'source' | echo line | endif
-    echo 'robcsi'
+    for mapCommand in s:mapCommands
+      if line =~ mapCommand | echo line | endif
+    endfor
   endfor
 endfunction
 
@@ -58,7 +59,7 @@ noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>ReadFile
 noremap <Plug>ReadFile  :call <SID>Readfile(s:currentFile)<CR>
 
 if !exists(":ViewMaps")
-  let s:currentFile = expand("$MYVIMRC")
+  let s:currentFile = expand("d:/git/.vim/.vimrc")
   echo s:currentFile
   command! -nargs=0 ViewMaps :call s:ReadFile(s:currentFile)
 endif
