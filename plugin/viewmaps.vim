@@ -94,7 +94,7 @@ function! s:GetMappingsFor(mappingMode)
               let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
               if s:previousLine =~ '^"'
 
-                let s:result = add(s:result, (s:lineIndex - 1).': '.s:previousLine)
+                let s:result = add(s:result, s:previousLine)
                 
               endif
             endif
@@ -150,25 +150,15 @@ endfunction
 
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
 
-"the new way
+" adding example command and mapping
+command! -nargs=+ ViewMaps :call s:DisplayMappings(<f-args>)
+
 if !exists('g:viewmaps_map_keys')
     let g:viewmaps_map_keys = 1
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :ViewMaps n<CR>:botright copen<CR>
-endif
-
-"the old way (help)
-if !hasmapto('<Plug>ViewmapsReadfile')
-  map <unique> <Leader>M  <Plug>ViewmapsReadfile
-endif
-noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>DisplayMappings
-
-noremap <Plug>DisplayMappings  :call <SID>DisplayMappings()<CR>
-
-if !exists(":ViewMaps")
-  command! -nargs=+ ViewMaps call s:DisplayMappings(<f-args>)
+    nnoremap <leader>d :ViewMaps n quickfix<CR>
 endif
 
 let &cpo = s:save_cpo
