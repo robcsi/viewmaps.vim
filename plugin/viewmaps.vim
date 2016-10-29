@@ -74,7 +74,7 @@ function! s:GetMappingsFor(mappingMode)
 
   for s:file in s:files
 
-    let s:result = add(s:result, 'RC File: '.s:file)
+    let s:result = add(s:result, 'File: '.s:file)
     let s:result = add(s:result, "\n")
 
     let s:linesInFile = readfile(s:file)
