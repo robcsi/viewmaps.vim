@@ -15,25 +15,6 @@ set cpo&vim
 
 "The functionality BEGIN ++++++++++++++++++++++++++++++++++++++++++
 
-" GetConfigFiles - gets vimrc and files sourced by it and returns
-" them in a list
-function! s:GetConfigFiles()
-  let s:vimrc = expand("$MYVIMRC")
-
-  let s:sourcedRCFiles = add([], s:vimrc)
-  let s:vimrcLines = readfile(s:vimrc)
-
-  for s:rcFile in s:vimrcLines
-    if s:rcFile =~ "^source"
-      let s:parts = split(s:rcFile)
-      let s:sourcedRCFiles = add(s:sourcedRCFiles, get(s:parts, 1))
-    endif
-  endfor
-
-  return s:sourcedRCFiles
-
-endfunction
-
 " list of mapping modes - the six major ones
 let s:mappingTypes = ['n', 'i', 'v', 's', 'o', 'c']
 
@@ -53,8 +34,38 @@ let s:mappingModesMap = {'n' : s:normalModeMapCommands,
                         \'o' : s:operatorpendingModeMapCommands, 
                         \'c' : s:commandlineModeMapCommands }
 
-" DisplayMappings - displays all the mappings, filtered by parameters
-function! s:DisplayMappings(mappingMode)
+" dictionary of mapping modes and their names
+let s:mappingModeNamesMap = {'n' : 'Normal Mode', 
+                            \'i' : 'Insert Mode', 
+                            \'v' : 'Visual Mode', 
+                            \'s' : 'Select Mode', 
+                            \'o' : 'Operator-Pending Mode', 
+                            \'c' : 'Command Line Mode' }
+
+" GetConfigFiles - gets vimrc and files sourced by it and returns
+" them in a list
+function! s:GetConfigFiles()
+  let s:vimrc = expand("$MYVIMRC")
+
+  let s:sourcedRCFiles = add([], s:vimrc)
+  let s:vimrcLines = readfile(s:vimrc)
+
+  for s:rcFile in s:vimrcLines
+    if s:rcFile =~ "^source"
+      let s:parts = split(s:rcFile)
+      let s:sourcedRCFiles = add(s:sourcedRCFiles, get(s:parts, 1))
+    endif
+  endfor
+
+  return s:sourcedRCFiles
+
+endfunction
+
+" GetMappingsFor - gathers all the mappings, filtered by parameters
+function! s:GetMappingsFor(mappingMode)
+
+  let s:result = add([], s:mappingModeNamesMap[a:mappingMode].' mappings')
+  let s:result = add(s:result, "\n")
 
   let s:files = s:GetConfigFiles()
 
@@ -62,7 +73,10 @@ function! s:DisplayMappings(mappingMode)
   let s:mapCommands = s:mappingModesMap[a:mappingMode]
 
   for s:file in s:files
-    echo 'RC File: '.s:file."\n"
+
+    let s:result = add(s:result, 'RC File: '.s:file)
+    let s:result = add(s:result, "\n")
+
     let s:linesInFile = readfile(s:file)
     let s:lineCount = len(s:linesInFile)
     let s:lineIndex = 0
@@ -79,15 +93,17 @@ function! s:DisplayMappings(mappingMode)
             if s:lineIndex > 0
               let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
               if s:previousLine =~ '^"'
-                echo (s:lineIndex - 1).': '.s:previousLine
+
+                let s:result = add(s:result, (s:lineIndex - 1).': '.s:previousLine)
+                
               endif
             endif
 
             "display mapping line
-            echo s:lineIndex.': '.s:line 
+            let s:result = add(s:result, s:lineIndex.': '.s:line)
 
             "display empty line
-            echo "\n"
+            let s:result = add(s:result, "\n")
           endif
         endif
       endfor
@@ -95,6 +111,41 @@ function! s:DisplayMappings(mappingMode)
       let s:lineIndex += 1
     endwhile
   endfor
+
+  return s:result
+
+endfunction
+
+" DisplayByEcho - Display mappings in list by using the :echo command
+function! s:DisplayByEcho(mappingsList)
+
+  for s:line in a:mappingsList
+    echo s:line
+  endfor
+
+endfunction
+
+" DisplayByQuickfix - Display mappings in list by using the :cexpr command
+function! s:DisplayByQuickfix(mappingsList)
+
+  cexpr s:mappingsList
+  botright copen 30
+
+endfunction
+
+" DiplayMappings - Function run by the main commands (ViewMaps), displays
+" all mappings of a mapping mode in the destination windows or list,
+" given by the parameters
+function! s:DisplayMappings(mappingMode, destination)
+
+  let s:mappingsList = s:GetMappingsFor(a:mappingMode)
+
+  if a:destination == 'echo'
+    call s:DisplayByEcho(s:mappingsList)
+  elseif a:destination == 'quickfix'
+    call s:DisplayByQuickfix(s:mappingsList)
+  endif
+
 endfunction
 
 "The functionality END ++++++++++++++++++++++++++++++++++++++++++++
@@ -105,7 +156,7 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :call <sid>DisplayMappings()<CR>
+    nnoremap <leader>d :ViewMaps n<CR>:botright copen<CR>
 endif
 
 "the old way (help)
@@ -117,7 +168,7 @@ noremap <unique> <script> <Plug>ViewmapsReadfile  <SID>DisplayMappings
 noremap <Plug>DisplayMappings  :call <SID>DisplayMappings()<CR>
 
 if !exists(":ViewMaps")
-  command! -nargs=1 ViewMaps :call s:DisplayMappings(<q-args>)
+  command! -nargs=+ ViewMaps call s:DisplayMappings(<f-args>)
 endif
 
 let &cpo = s:save_cpo
