@@ -138,12 +138,18 @@ endfunction
 " given by the parameters
 function! s:DisplayMappings(mappingMode, destination)
 
-  let s:mappingsList = s:GetMappingsFor(a:mappingMode)
+  if count(s:mappingTypes, a:mappingMode) == 1
+    let s:mappingsList = s:GetMappingsFor(a:mappingMode)
 
-  if a:destination == 'echo'
-    call s:DisplayByEcho(s:mappingsList)
-  elseif a:destination == 'quickfix'
-    call s:DisplayByQuickfix(s:mappingsList)
+    if a:destination == 'echo'
+      call s:DisplayByEcho(s:mappingsList)
+    elseif a:destination == 'quickfix'
+      call s:DisplayByQuickfix(s:mappingsList)
+    else
+      echo 'Destination not supported: '.a:destination
+    endif
+  else
+    echo 'Mapping mode not supported: '.a:mappingMode
   endif
 
 endfunction
