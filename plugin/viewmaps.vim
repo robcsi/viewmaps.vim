@@ -158,7 +158,7 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <leader>d :ViewMaps n quickfix<CR>
+    nnoremap <silent> <leader>d :ViewMaps n quickfix<CR>
 endif
 
 let &cpo = s:save_cpo
