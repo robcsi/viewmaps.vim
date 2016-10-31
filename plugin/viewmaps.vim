@@ -64,17 +64,21 @@ endfunction
 " GetMappingsFor - gathers all the mappings, filtered by parameters
 function! s:GetMappingsFor(mappingMode)
 
+  "get commands of selected mode
+  let s:mapCommands = s:mappingModesMap[a:mappingMode]
+
   let s:result = add([], s:mappingModeNamesMap[a:mappingMode].' mappings')
+  let s:result = add(s:result, s:CreateUnderlineForText(get(s:result, 0, ''), '^'))
   let s:result = add(s:result, "\n")
 
   let s:files = s:GetConfigFiles()
 
-  "get commands of selected mode
-  let s:mapCommands = s:mappingModesMap[a:mappingMode]
-
   for s:file in s:files
+    let s:numberOfMappingsFound = 0
 
     let s:result = add(s:result, 'File: '.s:file)
+    let s:beginAndEndUnderline = s:CreateUnderlineForText(get(s:result, len(s:result) - 1, ''), '=')
+    let s:result = add(s:result, s:beginAndEndUnderline)
     let s:result = add(s:result, "\n")
 
     let s:linesInFile = readfile(s:file)
@@ -86,10 +90,10 @@ function! s:GetMappingsFor(mappingMode)
 
         let s:line = get(s:linesInFile, s:lineIndex, '')
 
-        "display mapping
+        "add mapping
         if strlen(s:line) > 0 
           if s:line =~ '^'.s:mapCommand 
-            "display comment if available
+            "add comment if available
             if s:lineIndex > 0
               let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
               if s:previousLine =~ '^"'
@@ -99,10 +103,11 @@ function! s:GetMappingsFor(mappingMode)
               endif
             endif
 
-            "display mapping line
+            "add mapping line
             let s:result = add(s:result, s:lineIndex.': '.s:line)
+            let s:numberOfMappingsFound += 1
 
-            "display empty line
+            "add empty line
             let s:result = add(s:result, "\n")
           endif
         endif
@@ -110,6 +115,10 @@ function! s:GetMappingsFor(mappingMode)
 
       let s:lineIndex += 1
     endwhile
+
+    let s:result = add(s:result, s:numberOfMappingsFound.' mapping(s) found...')
+    let s:result = add(s:result, s:beginAndEndUnderline)
+    let s:result = add(s:result, "\n")
   endfor
 
   return s:result
@@ -130,6 +139,23 @@ function! s:DisplayByQuickfix(mappingsList)
 
   cexpr s:mappingsList
   botright copen 30
+
+endfunction
+
+function! s:CreateUnderlineForText(text, underLineCharacter)
+
+  let s:underLine = ''
+
+  let s:textLength = strlen(a:text)
+  if s:textLength > 0
+    let s:i = 0
+    while s:i < s:textLength
+      let s:underLine = s:underLine.a:underLineCharacter
+      let s:i += 1
+    endwhile
+  endif
+
+  return s:underLine
 
 endfunction
 
