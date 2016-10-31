@@ -67,7 +67,7 @@ function! s:GetMappingsFor(mappingMode)
   "get commands of selected mode
   let s:mapCommands = s:mappingModesMap[a:mappingMode]
 
-  let s:result = add([], s:mappingModeNamesMap[a:mappingMode].' mappings')
+  let s:result = add([], s:mappingModeNamesMap[a:mappingMode].' mappings: '.join(s:mapCommands, ', '))
   let s:result = add(s:result, s:CreateUnderlineForText(get(s:result, 0, ''), '^'))
   let s:result = add(s:result, "\n")
 
