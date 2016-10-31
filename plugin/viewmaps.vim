@@ -142,6 +142,9 @@ function! s:DisplayByQuickfix(mappingsList)
 
 endfunction
 
+" CreateUnderlineForText - Creates a line as long as text which contains
+" only the characters specified in underLineCharacter,
+" for underlining text with the new text
 function! s:CreateUnderlineForText(text, underLineCharacter)
 
   let s:underLine = ''
