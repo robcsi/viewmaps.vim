@@ -61,8 +61,9 @@ function! s:GetConfigFiles()
 
 endfunction
 
-" GetMappingsFor - gathers all the mappings, filtered by parameters
-function! s:GetMappingsFor(mappingMode)
+" FilterForQuickEcho - function which formats the list of mappings for
+" echoing
+function! s:FilterForEcho(mappingMode)
 
   "get commands of selected mode
   let s:mapCommands = s:mappingModesMap[a:mappingMode]
@@ -85,7 +86,7 @@ function! s:GetMappingsFor(mappingMode)
     let s:lineCount = len(s:linesInFile)
     let s:lineIndex = 0
 
-    while s:lineIndex < s:lineCount
+    while s:lineIndex <= s:lineCount
       for s:mapCommand in s:mapCommands
 
         let s:line = get(s:linesInFile, s:lineIndex, '')
@@ -98,13 +99,13 @@ function! s:GetMappingsFor(mappingMode)
               let s:previousLine = get(s:linesInFile, s:lineIndex - 1, '')
               if s:previousLine =~ '^"'
 
-                let s:result = add(s:result, s:previousLine)
+                let s:result = add(s:result, s:lineIndex.': '.s:previousLine)
                 
               endif
             endif
 
             "add mapping line
-            let s:result = add(s:result, s:lineIndex.': '.s:line)
+            let s:result = add(s:result, (s:lineIndex + 1).': '.s:line)
             let s:numberOfMappingsFound += 1
 
             "add empty line
@@ -125,6 +126,76 @@ function! s:GetMappingsFor(mappingMode)
 
 endfunction
 
+" FilterForQuickFix - function which formats the list of mappings according to
+" quickfix format
+function! s:FilterForQuickFix(mappingMode)
+
+  "get commands of selected mode
+  let s:mapCommands = s:mappingModesMap[a:mappingMode]
+
+  let s:result = []
+
+  let s:files = s:GetConfigFiles()
+
+  for s:file in s:files
+    let s:numberOfMappingsFound = 0
+
+    let s:linesInFile = readfile(s:file)
+    let s:lineCount = len(s:linesInFile)
+    let s:lineIndex = 0 
+    "Lines are numbered starting from 0 in a list,
+    "but they are numbered starting from 1 in a buffer
+    "That is why lineIndex and lineIndex + 1 need to be given to
+    "quickfix window items...
+
+    while s:lineIndex < s:lineCount
+
+      let s:line = get(s:linesInFile, s:lineIndex, '')
+      if strlen(s:line) > 0 
+        for s:mapCommand in s:mapCommands
+          if s:line =~ '^'.s:mapCommand 
+            "add comment if available
+            if s:lineIndex > 0
+              let s:previousLineIndex = s:lineIndex - 1
+              let s:previousLine = get(s:linesInFile, s:previousLineIndex, '')
+              if s:previousLine =~ '^"'
+                let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : s:lineIndex, 'text' : s:previousLine})
+              endif
+            endif
+
+            "add mapping
+            let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : s:lineIndex + 1, 'text' : s:line})
+            let s:numberOfMappingsFound += 1
+
+            "add empty line
+            if s:lineIndex + 1< s:lineCount
+              let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : '', 'text' : "\n"})
+            endif
+          endif
+        endfor
+      endif
+
+      let s:lineIndex += 1
+    endwhile
+  endfor
+
+  return s:result
+
+endfunction
+
+" GetMappingsFor - gathers all the mappings, filtered by parameters
+function! s:GetMappingsFor(mappingMode, destination)
+
+  if a:destination == 'quickfix'
+    let s:result = s:FilterForQuickFix(a:mappingMode)
+  elseif a:destination == 'echo'
+    let s:result = s:FilterForEcho(a:mappingMode)
+  endif
+
+  return s:result
+
+endfunction
+
 " DisplayByEcho - Display mappings in list by using the :echo command
 function! s:DisplayByEcho(mappingsList)
 
@@ -135,10 +206,16 @@ function! s:DisplayByEcho(mappingsList)
 endfunction
 
 " DisplayByQuickfix - Display mappings in list by using the :cexpr command
-function! s:DisplayByQuickfix(mappingsList)
+function! s:DisplayByQuickfix(mappingMode, mappingsList)
 
-  cexpr s:mappingsList
-  vertical botright copen 80
+  "get commands of selected mode
+  let s:mapCommands = s:mappingModesMap[a:mappingMode]
+  let s:title = s:mappingModeNamesMap[a:mappingMode].' mappings: '.join(s:mapCommands, ', ').'. '.s:numberOfMappingsFound.' found...'
+
+  call setqflist([])
+  call setqflist([], 'r', {'title' : s:title})
+  call setqflist(a:mappingsList, 'a')
+  botright copen 25
 
 endfunction
 
@@ -168,12 +245,12 @@ endfunction
 function! s:DisplayMappings(mappingMode, destination)
 
   if count(s:mappingTypes, a:mappingMode) == 1
-    let s:mappingsList = s:GetMappingsFor(a:mappingMode)
+    let s:mappingsList = s:GetMappingsFor(a:mappingMode, a:destination)
 
     if a:destination == 'echo'
       call s:DisplayByEcho(s:mappingsList)
     elseif a:destination == 'quickfix'
-      call s:DisplayByQuickfix(s:mappingsList)
+      call s:DisplayByQuickfix(a:mappingMode, s:mappingsList)
     else
       echo 'Destination not supported: '.a:destination
     endif
