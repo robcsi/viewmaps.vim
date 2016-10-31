@@ -138,7 +138,7 @@ endfunction
 function! s:DisplayByQuickfix(mappingsList)
 
   cexpr s:mappingsList
-  botright copen 30
+  vertical botright copen 80
 
 endfunction
 
