@@ -213,7 +213,9 @@ function! s:DisplayByQuickfix(mappingMode, mappingsList)
   let s:title = s:mappingModeNamesMap[a:mappingMode].' mappings: '.join(s:mapCommands, ', ').'. '.s:numberOfMappingsFound.' found...'
 
   call setqflist([])
-  call setqflist([], 'r', {'title' : s:title})
+  if v:version >= 800
+    call setqflist([], 'r', {'title' : s:title})
+  endif
   call setqflist(a:mappingsList, 'a')
   botright copen 25
 
