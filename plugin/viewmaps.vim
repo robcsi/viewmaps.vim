@@ -247,15 +247,18 @@ function! s:DisplayByQuickfix(mappingMode, mappingsList)
   call setqflist([])
   if v:version >= 800
     call setqflist([], 'r', {'title' : s:title})
-  else
-    let w:quickfix_title = s:title
   endif
   call setqflist(a:mappingsList, 'a')
   let s:direction = ''
   if g:viewmaps_quickfix_direction == 1
     let s:direction = 'vertical '
   endif
+
   exe s:direction."botright copen ".g:viewmaps_quickfix_dimension
+
+  if v:version < 800 && exists("w:quickfix_title")
+    let w:quickfix_title = s:title
+  endif
 
 endfunction
 
