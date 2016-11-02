@@ -10,6 +10,19 @@ if exists("g:loaded_viewmaps")
 endif
 let g:loaded_viewmaps = 1
 
+" specifies the direction of the quickfix window to open
+" 0 - horizontal; 1 - vertical
+if !exists("g:viewmaps_quickfix_direction")
+  let g:viewmaps_quickfix_direction = 0
+endif
+
+" specifies the height or width of the quickfix window
+" default is 25 for the default of 'horizontal'
+" it means that many lines in horizontal, or columns in vertical
+if !exists("g:viewmaps_quickfix_dimension")
+  let g:viewmaps_quickfix_dimension = 25
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -217,7 +230,11 @@ function! s:DisplayByQuickfix(mappingMode, mappingsList)
     call setqflist([], 'r', {'title' : s:title})
   endif
   call setqflist(a:mappingsList, 'a')
-  botright copen 25
+  let s:direction = ''
+  if g:viewmaps_quickfix_direction == 1
+    let s:direction = 'vertical '
+  endif
+  exe s:direction."botright copen ".g:viewmaps_quickfix_dimension
 
 endfunction
 
@@ -272,7 +289,9 @@ if !exists('g:viewmaps_map_keys')
 endif
 
 if g:viewmaps_map_keys
-    nnoremap <silent> <leader>d :ViewMaps n quickfix<CR>
+    nnoremap <silent> <leader>dn :ViewMaps n quickfix<CR>
+    nnoremap <silent> <leader>di :ViewMaps i quickfix<CR>
+    nnoremap <silent> <leader>dv :ViewMaps v quickfix<CR>
 endif
 
 let &cpo = s:save_cpo
