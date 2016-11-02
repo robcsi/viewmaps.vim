@@ -114,6 +114,16 @@ function! s:FilterForEcho(mappingMode)
 
                 let s:result = add(s:result, s:lineIndex.': '.s:previousLine)
                 
+              else
+                "check to see if mapping line contains comment
+                let s:revertedLine = join(reverse(split(s:line, '.\zs')), '')
+                let s:positionOfComment = match(s:revertedLine, '"')
+                if s:positionOfComment > 0
+                  let s:comment = strcharpart(s:line, strlen(s:line) - s:positionOfComment - 1)
+                  let s:result = add(s:result, (s:lineIndex + 1).': '.s:comment)
+                  let s:line = strcharpart(s:line, 0, strlen(s:line) - s:positionOfComment - 1)
+                endif
+
               endif
             endif
 
