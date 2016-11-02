@@ -173,6 +173,15 @@ function! s:FilterForQuickFix(mappingMode)
               let s:previousLine = get(s:linesInFile, s:previousLineIndex, '')
               if s:previousLine =~ '^"'
                 let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : s:lineIndex, 'text' : s:previousLine})
+              else
+                "check to see if mapping line contains comment
+                let s:revertedLine = join(reverse(split(s:line, '.\zs')), '')
+                let s:positionOfComment = match(s:revertedLine, '"')
+                if s:positionOfComment > 0
+                  let s:comment = strcharpart(s:line, strlen(s:line) - s:positionOfComment - 1)
+                  let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : s:lineIndex + 1, 'text' : s:comment})
+                  let s:line = strcharpart(s:line, 0, strlen(s:line) - s:positionOfComment - 1)
+                endif
               endif
             endif
 
