@@ -247,6 +247,8 @@ function! s:DisplayByQuickfix(mappingMode, mappingsList)
   call setqflist([])
   if v:version >= 800
     call setqflist([], 'r', {'title' : s:title})
+  else
+    let w:quickfix_title = s:title
   endif
   call setqflist(a:mappingsList, 'a')
   let s:direction = ''
