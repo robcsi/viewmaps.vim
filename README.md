@@ -1,6 +1,8 @@
 # viewmaps.vim
 Small plugin for displaying mappings defined in vimrc
 
+The plugin was born as an exercise with Vimscript, and it's my first plugin.
+
 You can use this plugin to populate a list of your vimrc mappings in the 
 QuickFix window.
 The mappings can be retrieved by VIm mode types (like normal, insert, visual,
