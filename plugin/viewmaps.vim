@@ -1,6 +1,6 @@
 
 " Vim global plugin for displaying mappings from your vimrc
-" Last Change:	2016 Oct. 24
+" Last Change:  2016 Nov 04	
 " Maintainer:	Robert Sarkozi <sarkozi.robert@gmail.com>
 " License:	This file is placed in the public domain.
 " Version:	0.1.0
@@ -10,10 +10,10 @@ if exists("g:loaded_viewmaps")
 endif
 let g:loaded_viewmaps = 1
 
-" specifies the direction of the quickfix window to open
+" specifies the orientation of the quickfix window to open
 " 0 - horizontal; 1 - vertical
-if !exists("g:viewmaps_quickfix_direction")
-  let g:viewmaps_quickfix_direction = 0
+if !exists("g:viewmaps_quickfix_orientation")
+  let g:viewmaps_quickfix_orientation = 0
 endif
 
 " specifies the height or width of the quickfix window
@@ -249,12 +249,12 @@ function! s:DisplayByQuickfix(mappingMode, mappingsList)
     call setqflist([], 'r', {'title' : s:title})
   endif
   call setqflist(a:mappingsList, 'a')
-  let s:direction = ''
-  if g:viewmaps_quickfix_direction == 1
-    let s:direction = 'vertical '
+  let s:orientation = ''
+  if g:viewmaps_quickfix_orientation == 1
+    let s:orientation = 'vertical '
   endif
 
-  exe s:direction."botright copen ".g:viewmaps_quickfix_dimension
+  exe s:orientation."botright copen ".g:viewmaps_quickfix_dimension
 
   if v:version < 800 && exists("w:quickfix_title")
     let w:quickfix_title = s:title
@@ -307,16 +307,6 @@ endfunction
 
 " adding example command and mapping
 command! -nargs=+ ViewMaps :call s:DisplayMappings(<f-args>)
-
-if !exists('g:viewmaps_map_keys')
-    let g:viewmaps_map_keys = 1
-endif
-
-if g:viewmaps_map_keys
-    nnoremap <silent> <leader>dn :ViewMaps n quickfix<CR>
-    nnoremap <silent> <leader>di :ViewMaps i quickfix<CR>
-    nnoremap <silent> <leader>dv :ViewMaps v quickfix<CR>
-endif
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
