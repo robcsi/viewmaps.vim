@@ -30,7 +30,7 @@ Comments are also displayed: currently it only displays one line comments from
 the line right above the mappings or comments at the end of the mapping line,
 starting with the last available '"' character to the end of the line.
 
-Get the plugin from here on Github: TODO
+Get the plugin from here on Github: https://github.com/robcsi/viewmaps.vim.git
 
 You can use Pathogen to include it into your bundle.
 
