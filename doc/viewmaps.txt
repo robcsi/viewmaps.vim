@@ -36,23 +36,23 @@ You can use Pathogen to include it into your bundle.
 
 Other features include:
 	o The plugin tries to detect rc files that are sourced in your main
-	vimrc. Only lines starting with 'source' are parsed and mappings loaded
-	from those files, too
+	  vimrc. Only lines starting with 'source' are parsed and mappings loaded
+	  from those files, too
 
 	o Mappings can be displayed in and echoed list, like the 'map' command
-	does, just for quick reference. The display formatting is different
-	in this case, compared to the QuickFix format
+	  does, just for quick reference. The display formatting is different
+	  in this case, compared to the QuickFix format
 
 	o In the Quickfix window (leveraging its functionality) you can press
-	<Enter> and go to the selected line in the main or sourced vimrc file
-	There you can edit the mapping or its comment as desired and maybe
-	reload the list of mappings into the QuickFix window
+	  <Enter> and go to the selected line in the main or sourced vimrc file
+	  There you can edit the mapping or its comment as desired and maybe
+	  reload the list of mappings into the QuickFix window
 	
 	o There is an option for configuring the position of the QuickFix window,
 	  g:viewmap_quickfix_orientation (horizontal or vertical)
 
 	o There is an option for configuring the width or height of the Quickfix
-	window depending on what its position is: g:viewmaps_quickfix_dimension
+	  window depending on what its position is: g:viewmaps_quickfix_dimension
 
 	o The plugin leverages the functionality of the QuickFix window by using
 	  jumping to lines in the rc files, also leverages the '[q' and ']q' et.al.
@@ -78,6 +78,7 @@ E.g.:
 
 Then the QuickFix window will be populated with lines like the following:
 
+>
     " ...
     \stuff\git\.vim\.vimrc|594| " Don't move when you use * 
     \stuff\git\.vim\.vimrc|595| nnoremap <silent> * :let stay_star_view = winsaveview()<cr>*:call winrestview(stay_star_view)<cr>
@@ -88,6 +89,7 @@ Then the QuickFix window will be populated with lines like the following:
     \stuff\git\.vim\.vimrc|603| " shortcut to insert current date in file
     \stuff\git\.vim\.vimrc|604| nnoremap <leader>D i<C-R>=strftime("%Y %b %d")<cr><esc>
     " ...
+<
 
 As you may know, the first column contains the file path, the second one the line
 the mapping or comment is on, and then the content. This information in this format
@@ -126,9 +128,9 @@ g:viewmaps_quickfix_dimension
 ==============================================================================
 FUTURE PLANS						    *viewmaps-plans*
 
-Features I plan to do:
+Features I plan to implement:
     o Ability to read multiline comments
-    o Filter by keyword in comments and mapping definitios
+    o Filter by keyword in comments and mapping definitions
     o Load mappings from sourced configuration files recursively
     o Other fixes and refactoring
 
