@@ -1,4 +1,4 @@
-*viewmpas.txt*	Plugin for displaying user-defined mappings from vimrc file
+*viewmaps.txt*	Plugin for displaying user-defined mappings from vimrc file
 		For Vim version 7.4 and above.
 		Last Change: 2016 Nov 04 10:41 AM
 	
