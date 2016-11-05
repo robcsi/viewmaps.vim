@@ -24,27 +24,27 @@ Get the plugin from here on Github: https://github.com/robcsi/viewmaps.vim.git
 You can use Pathogen to include it into your bundle.
 
 Other features include:
-	o The plugin tries to detect rc files that are sourced in your main
-	  vimrc. Only lines starting with 'source' are parsed and mappings loaded
-	  from those files, too
+o The plugin tries to detect rc files that are sourced in your main
+vimrc. Only lines starting with 'source' are parsed and mappings loaded
+from those files, too
 
-	o Mappings can be displayed in and echoed list, like the 'map' command
-	  does, just for quick reference. The display formatting is different
-	  in this case, compared to the QuickFix format
+o Mappings can be displayed in and echoed list, like the 'map' command
+does, just for quick reference. The display formatting is different
+in this case, compared to the QuickFix format
 
-	o In the Quickfix window (leveraging its functionality) you can press
-	  <Enter> and go to the selected line in the main or sourced vimrc file
-	  There you can edit the mapping or its comment as desired and maybe
-	  reload the list of mappings into the QuickFix window
+o In the Quickfix window (leveraging its functionality) you can press
+<Enter> and go to the selected line in the main or sourced vimrc file
+There you can edit the mapping or its comment as desired and maybe
+reload the list of mappings into the QuickFix window
 	
-	o There is an option for configuring the position of the QuickFix window,
-	  g:viewmap_quickfix_orientation (horizontal or vertical)
+o There is an option for configuring the position of the QuickFix window,
+g:viewmap_quickfix_orientation (horizontal or vertical)
 
-	o There is an option for configuring the width or height of the Quickfix
-	  window depending on what its position is: g:viewmaps_quickfix_dimension
+o There is an option for configuring the width or height of the Quickfix
+window depending on what its position is: g:viewmaps_quickfix_dimension
 
-	o The plugin leverages the functionality of the QuickFix window by using
-	  jumping to lines in the rc files, also leverages the '[q' and ']q' et.al.
-    keyboard shortcuts defined by the vim-unimpaired plugin
+o The plugin leverages the functionality of the QuickFix window by using
+jumping to lines in the rc files, also leverages the '[q' and ']q' et.al.
+keyboard shortcuts defined by the vim-unimpaired plugin
     
 For more information read the help file. :h viewmaps
