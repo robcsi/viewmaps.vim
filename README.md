@@ -1,5 +1,5 @@
 # viewmaps.vim
-Small plugin for displaying mappings defined in vimrc
+Small plugin for displaying mappings defined in vimrc - Version 0.1.0
 
 The plugin was born as an exercise with Vimscript, and it's my first plugin.
 
