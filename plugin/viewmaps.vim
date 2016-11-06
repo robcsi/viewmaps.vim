@@ -187,7 +187,7 @@ function! s:FilterForQuickFix(mappingMode)
                 "check to see if mapping line contains comment
                 let s:revertedLine = join(reverse(split(s:line, '.\zs')), '')
                 let s:positionOfComment = match(s:revertedLine, '"')
-                if s:positionOfComment > 0
+                if s:positionOfComment > 0 && exists("strcharpart")
                   let s:comment = strcharpart(s:line, strlen(s:line) - s:positionOfComment - 1)
                   let s:result = add(s:result, {'filename' : expand(s:file), 'lnum' : s:lineIndex + 1, 'text' : s:comment})
                   let s:line = strcharpart(s:line, 0, strlen(s:line) - s:positionOfComment - 1)
