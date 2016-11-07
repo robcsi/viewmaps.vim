@@ -40,7 +40,7 @@ There you can edit the mapping or its comment as desired and maybe
 reload the list of mappings into the QuickFix window
 	
 - There is an option for configuring the position of the QuickFix window,
-`g:viewmap_quickfix_orientation` (horizontal or vertical)
+`g:viewmaps_quickfix_orientation` (horizontal or vertical)
 
 - There is an option for configuring the width or height of the Quickfix
 window depending on what its position is: `g:viewmaps_quickfix_dimension`
