@@ -47,7 +47,7 @@ window depending on what its position is: `g:viewmaps_quickfix_dimension`
 
 - The plugin leverages the functionality of the QuickFix window by using
 jumping to lines in the rc files, also leverages the `[q` and `]q` et.al.
-keyboard shortcuts defined by the vim-unimpaired plugin
+keyboard shortcuts defined by the [vim-unimpaired](https://github.com/tpope/vim-unimpaired) plugin
     
 For more information read the help file. :h viewmaps
 
