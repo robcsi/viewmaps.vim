@@ -2,7 +2,7 @@
 Small plugin for displaying mappings defined in vimrc
 
 ## Motivation
-The plugin was born as an exercise with Vimscript, and it's my first plugin.
+The plugin was born as an exercise with Vimscript to easy me in remembering my mappings in VIm, browsing them without having to open the vimrc all the time, and it's my first plugin.
 
 ## Purpose
 You can use this plugin to populate a list of your vimrc mappings in the 
