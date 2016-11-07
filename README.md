@@ -2,7 +2,7 @@
 Small plugin for displaying mappings defined in vimrc
 
 ## Motivation
-The plugin was born as an exercise with Vimscript to easy me in remembering my mappings in VIm, browsing them without having to open the vimrc all the time, and it's my first plugin.
+The plugin was born as an exercise with Vimscript to aid me in remembering my mappings in VIm, browsing them without having to open the vimrc all the time, and it's my first plugin.
 
 ## Purpose
 You can use this plugin to populate a list of your vimrc mappings in the 
@@ -30,23 +30,23 @@ Other features include:
 vimrc. Only lines starting with 'source' are parsed and mappings loaded
 from those files, too
 
-- Mappings can be displayed in and echoed list, like the 'map' command
+- Mappings can be displayed in the Quickfix window or an echoed list, like the 'map' command
 does, just for quick reference. The display formatting is different
 in this case, compared to the QuickFix format
 
 - In the Quickfix window (leveraging its functionality) you can press
-<Enter> and go to the selected line in the main or sourced vimrc file
+<Enter> and go to the selected line in the main or sourced vimrc file.
 There you can edit the mapping or its comment as desired and maybe
 reload the list of mappings into the QuickFix window
 	
 - There is an option for configuring the position of the QuickFix window,
-g:viewmap_quickfix_orientation (horizontal or vertical)
+`g:viewmap_quickfix_orientation` (horizontal or vertical)
 
 - There is an option for configuring the width or height of the Quickfix
-window depending on what its position is: g:viewmaps_quickfix_dimension
+window depending on what its position is: `g:viewmaps_quickfix_dimension`
 
 - The plugin leverages the functionality of the QuickFix window by using
-jumping to lines in the rc files, also leverages the '[q' and ']q' et.al.
+jumping to lines in the rc files, also leverages the `[q` and `]q` et.al.
 keyboard shortcuts defined by the vim-unimpaired plugin
     
 For more information read the help file. :h viewmaps
