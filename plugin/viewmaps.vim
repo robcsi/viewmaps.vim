@@ -1,6 +1,6 @@
 
 " Vim global plugin for displaying mappings from your vimrc
-" Last Change:  2016 Nov 04	
+" Last Change:  2016 Nov 07 
 " Maintainer:	Robert Sarkozi <sarkozi.robert@gmail.com>
 " License:	This file is placed in the public domain.
 " Version:	0.1.0
