@@ -1,6 +1,8 @@
 # ViewMaps.vim
 Small plugin for displaying mappings defined in vimrc
 
+![](viewmaps.jpg?raw=true)
+
 ## Motivation
 The plugin was born as an exercise with Vimscript to aid me in remembering my mappings in VIm, browsing them without having to open the vimrc all the time, and it's my first plugin.
 
