@@ -10,20 +10,20 @@ QuickFix window.
 The mappings can be retrieved by VIm mode types (like normal, insert, visual,
 select and operator-pending mode).
 
-The 'map' command displays all availabe and loaded mappings in VIm and that
-list contain too much to process just by looking at it. This plugin helps
+The `:map` command displays all availabe and loaded mappings in VIm and that
+list contains too much to process just by looking at it. This plugin helps
 you view only the ones defined by you with comments related to them.
 
 Mappings can be many, this is why filtering is possible for different modes.
-By populating the QuickFix window you can quickly jump from there to the vimrc
+By populating the QuickFix window you can quickly jump to the vimrc
 file on the exact line where the mappings are defined.
 Comments are also displayed: currently it only displays one line comments from
 the line right above the mappings or comments at the end of the mapping line,
-starting with the last available '"' character to the end of the line.
+starting with the last available `"` character to the end of the line.
 
 Get the plugin from here on Github: https://github.com/robcsi/viewmaps.vim.git
 
-You can use Pathogen to include it into your bundle.
+You can use Pathogen to include it into your plugin bundle.
 
 Other features include:
 - The plugin tries to detect rc files that are sourced in your main
@@ -47,7 +47,7 @@ window depending on what its position is: `g:viewmaps_quickfix_dimension`
 
 - The plugin leverages the functionality of the QuickFix window by using
 jumping to lines in the rc files, also leverages the `[q` and `]q` et.al.
-keyboard shortcuts defined by the vim-unimpaired plugin
+keyboard shortcuts defined by the [vim-unimpaired](https://github.com/tpope/vim-unimpaired) plugin
     
 For more information read the help file. :h viewmaps
 
