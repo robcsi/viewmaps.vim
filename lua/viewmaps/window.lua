@@ -7,13 +7,34 @@ local M = {}
 local state = {
   buf = nil,
   win = nil,
+  footer_buf = nil,
+  footer_win = nil,
   current_mode = 'n',
 }
 
 local ns_id = vim.api.nvim_create_namespace('viewmaps')
 
+--- Create border with highlight group
+local function make_border(border_style)
+  if type(border_style) ~= 'string' or border_style == 'none' then
+    return border_style
+  end
+  local border_chars = {
+    single = { '┌', '─', '┐', '│', '┘', '─', '└', '│' },
+    double = { '╔', '═', '╗', '║', '╝', '═', '╚', '║' },
+    rounded = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
+    solid = { '▛', '▀', '▜', '▐', '▟', '▄', '▙', '▌' },
+  }
+  local chars = border_chars[border_style] or border_chars.rounded
+  local border = {}
+  for _, char in ipairs(chars) do
+    table.insert(border, { char, 'ViewMapsBorder' })
+  end
+  return border
+end
+
 --- Calculate window dimensions
----@return table Window options for nvim_open_win
+---@return table main_opts, table footer_opts
 local function get_win_opts()
   local opts = config.get()
   local win_opts = opts.window
@@ -32,38 +53,52 @@ local function get_win_opts()
     height = math.floor(editor_height * height)
   end
 
+  -- Reserve 1 row for footer + separator
+  local footer_height = 1
+  local main_height = height - footer_height - 1 -- -1 for separator line
+
   -- Calculate centered position
   local row = math.floor((editor_height - height) / 2)
   local col = math.floor((editor_width - width) / 2)
 
-  -- Border with highlight group
-  local border = win_opts.border
-  if type(border) == 'string' and border ~= 'none' then
-    -- Convert string border to table with highlight
-    local border_chars = {
-      none = {},
-      single = { '┌', '─', '┐', '│', '┘', '─', '└', '│' },
-      double = { '╔', '═', '╗', '║', '╝', '═', '╚', '║' },
-      rounded = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
-      solid = { '▛', '▀', '▜', '▐', '▟', '▄', '▙', '▌' },
-      shadow = { '', '', ' ', ' ', ' ', ' ', ' ', '' },
-    }
-    local chars = border_chars[border] or border_chars.rounded
-    border = {}
-    for _, char in ipairs(chars) do
-      table.insert(border, { char, 'ViewMapsBorder' })
-    end
-  end
+  local border = make_border(win_opts.border)
 
-  return {
+  -- Main window: top and sides, bottom connects to footer
+  local main_border = {
+    border[1], border[2], border[3], -- top-left, top, top-right
+    border[4],                        -- right
+    { '┤', 'ViewMapsBorder' }, { '─', 'ViewMapsBorder' }, { '├', 'ViewMapsBorder' }, -- bottom connects
+    border[8],                        -- left
+  }
+
+  -- Footer window: sides and bottom, top is open
+  local footer_border = {
+    { '', 'ViewMapsBorder' }, { '', 'ViewMapsBorder' }, { '', 'ViewMapsBorder' }, -- no top
+    border[4], border[5], border[6], border[7], border[8],
+  }
+
+  local main_opts = {
     relative = 'editor',
     width = width,
-    height = height,
+    height = main_height,
     row = row,
     col = col,
     style = 'minimal',
-    border = border,
+    border = main_border,
   }
+
+  local footer_opts = {
+    relative = 'editor',
+    width = width,
+    height = footer_height,
+    row = row + main_height + 2, -- +2 for main border
+    col = col,
+    style = 'minimal',
+    border = footer_border,
+    focusable = false,
+  }
+
+  return main_opts, footer_opts
 end
 
 --- Create mode tabs string for window title
@@ -159,14 +194,10 @@ local function render()
   local winbar = create_winbar(mode, count)
   vim.api.nvim_set_option_value('winbar', winbar, { win = state.win })
 
-  -- Mappings only (no footer in buffer - it's in statusline)
+  -- Mappings
   for _, line in ipairs(map_lines) do
     table.insert(lines, line)
   end
-
-  -- Set statusline as fixed footer
-  local statusline = '%#ViewMapsFooter#  q:close  1-8:mode  Tab/]m:next  r:refresh%*'
-  vim.api.nvim_set_option_value('statusline', statusline, { win = state.win })
 
   -- Set buffer content
   vim.api.nvim_set_option_value('modifiable', true, { buf = state.buf })
@@ -184,22 +215,33 @@ function M.open(mode)
 
   state.current_mode = mode or 'n'
 
-  -- Create buffer
+  -- Create main buffer
   state.buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_set_option_value('buftype', 'nofile', { buf = state.buf })
   vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = state.buf })
   vim.api.nvim_set_option_value('filetype', 'viewmaps', { buf = state.buf })
 
-  -- Create window
-  local win_opts = get_win_opts()
-  state.win = vim.api.nvim_open_win(state.buf, true, win_opts)
+  -- Create footer buffer
+  state.footer_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = state.footer_buf })
+  vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = state.footer_buf })
+  vim.api.nvim_buf_set_lines(state.footer_buf, 0, -1, false, {
+    '  q:close  1-8:mode  Tab/]m:next  r:refresh'
+  })
 
-  -- Window options
+  -- Create windows
+  local main_opts, footer_opts = get_win_opts()
+  state.win = vim.api.nvim_open_win(state.buf, true, main_opts)
+  state.footer_win = vim.api.nvim_open_win(state.footer_buf, false, footer_opts)
+
+  -- Main window options
   vim.api.nvim_set_option_value('cursorline', true, { win = state.win })
   vim.api.nvim_set_option_value('wrap', false, { win = state.win })
   vim.api.nvim_set_option_value('number', false, { win = state.win })
   vim.api.nvim_set_option_value('relativenumber', false, { win = state.win })
-  vim.api.nvim_set_option_value('winfixheight', true, { win = state.win })
+
+  -- Footer window options
+  vim.api.nvim_set_option_value('wrap', false, { win = state.footer_win })
 
   -- Set up keymaps and render
   setup_keymaps()
@@ -220,8 +262,13 @@ function M.close()
   if state.win and vim.api.nvim_win_is_valid(state.win) then
     vim.api.nvim_win_close(state.win, true)
   end
+  if state.footer_win and vim.api.nvim_win_is_valid(state.footer_win) then
+    vim.api.nvim_win_close(state.footer_win, true)
+  end
   state.win = nil
   state.buf = nil
+  state.footer_win = nil
+  state.footer_buf = nil
 end
 
 --- Toggle the floating window
