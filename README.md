@@ -2,8 +2,6 @@
 
 A Neovim plugin for displaying your keymappings in a floating window, organized by mode.
 
-![viewmaps.nvim](viewmaps.jpg?raw=true)
-
 ## Features
 
 - View keymappings in a modern floating window
