@@ -10,6 +10,7 @@ local state = {
   footer_buf = nil,
   footer_win = nil,
   current_mode = 'n',
+  current_maps = {}, -- mapping objects indexed by buffer line
 }
 
 local ns_id = vim.api.nvim_create_namespace('viewmaps')
@@ -131,6 +132,46 @@ local function create_winbar(current_mode, count)
   return string.format('  %%#ViewMapsHeader#%s Mode%%* - %d mapping(s)', mode_name, count)
 end
 
+--- Jump to mapping definition
+local function jump_to_definition()
+  local cursor = vim.api.nvim_win_get_cursor(state.win)
+  local line_nr = cursor[1]
+
+  local map = state.current_maps[line_nr]
+  if not map then
+    vim.notify('No mapping on this line', vim.log.levels.WARN)
+    return
+  end
+
+  local file, lnum = mappings.get_source_location(map)
+  if not file then
+    vim.notify('No source location available for this mapping', vim.log.levels.WARN)
+    return
+  end
+
+  -- If no line number, try to find it by searching
+  if not lnum then
+    lnum = mappings.find_mapping_in_file(file, map.lhs)
+  end
+
+  -- Close the window first
+  M.close()
+
+  -- Open the file
+  vim.cmd('edit ' .. vim.fn.fnameescape(file))
+
+  -- Jump to line if we have one
+  if lnum then
+    vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+    vim.cmd('normal! zz')
+  else
+    -- Search for the mapping
+    local search_pattern = vim.fn.escape(map.lhs, '/\\')
+    vim.fn.setreg('/', search_pattern)
+    vim.notify('Opened file, search for: ' .. map.lhs, vim.log.levels.INFO)
+  end
+end
+
 --- Set up buffer keymaps
 local function setup_keymaps()
   local buf = state.buf
@@ -139,6 +180,9 @@ local function setup_keymaps()
   -- Close window
   vim.keymap.set('n', 'q', function() M.close() end, opts)
   vim.keymap.set('n', '<Esc>', function() M.close() end, opts)
+
+  -- Jump to definition
+  vim.keymap.set('n', '<CR>', jump_to_definition, opts)
 
   -- Mode switching with number keys
   local modes = config.get().modes
@@ -184,7 +228,7 @@ local function render()
   local lines = {}
 
   -- Get mappings
-  local map_lines, count = mappings.format_all(mode)
+  local map_lines, count, maps = mappings.format_all(mode)
 
   -- Set window title with mode tabs
   local title = create_title(mode)
@@ -193,6 +237,12 @@ local function render()
   -- Set winbar with mode info (fixed below title)
   local winbar = create_winbar(mode, count)
   vim.api.nvim_set_option_value('winbar', winbar, { win = state.win })
+
+  -- Store mapping objects indexed by line number for jump-to-definition
+  state.current_maps = {}
+  for i, map in ipairs(maps) do
+    state.current_maps[i] = map
+  end
 
   -- Mappings
   for _, line in ipairs(map_lines) do
@@ -226,7 +276,7 @@ function M.open(mode)
   vim.api.nvim_set_option_value('buftype', 'nofile', { buf = state.footer_buf })
   vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = state.footer_buf })
   vim.api.nvim_buf_set_lines(state.footer_buf, 0, -1, false, {
-    '  q:close  1-8:mode  Tab/]m:next  r:refresh'
+    '  Enter:goto  q:close  1-8:mode  Tab:next  r:refresh'
   })
 
   -- Create windows
