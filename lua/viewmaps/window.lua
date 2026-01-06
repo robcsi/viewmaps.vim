@@ -36,6 +36,25 @@ local function get_win_opts()
   local row = math.floor((editor_height - height) / 2)
   local col = math.floor((editor_width - width) / 2)
 
+  -- Border with highlight group
+  local border = win_opts.border
+  if type(border) == 'string' and border ~= 'none' then
+    -- Convert string border to table with highlight
+    local border_chars = {
+      none = {},
+      single = { '┌', '─', '┐', '│', '┘', '─', '└', '│' },
+      double = { '╔', '═', '╗', '║', '╝', '═', '╚', '║' },
+      rounded = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
+      solid = { '▛', '▀', '▜', '▐', '▟', '▄', '▙', '▌' },
+      shadow = { '', '', ' ', ' ', ' ', ' ', ' ', '' },
+    }
+    local chars = border_chars[border] or border_chars.rounded
+    border = {}
+    for _, char in ipairs(chars) do
+      table.insert(border, { char, 'ViewMapsBorder' })
+    end
+  end
+
   return {
     relative = 'editor',
     width = width,
@@ -43,7 +62,7 @@ local function get_win_opts()
     row = row,
     col = col,
     style = 'minimal',
-    border = win_opts.border,
+    border = border,
   }
 end
 
@@ -114,6 +133,7 @@ local function setup_highlights()
   vim.api.nvim_set_hl(0, 'ViewMapsKey', { link = 'Keyword', default = true })
   vim.api.nvim_set_hl(0, 'ViewMapsDesc', { link = 'String', default = true })
   vim.api.nvim_set_hl(0, 'ViewMapsFooter', { link = 'Comment', default = true })
+  vim.api.nvim_set_hl(0, 'ViewMapsBorder', { fg = '#ffffff', default = true })
 end
 
 --- Render the buffer content
