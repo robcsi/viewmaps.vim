@@ -159,29 +159,22 @@ local function render()
   local winbar = create_winbar(mode, count)
   vim.api.nvim_set_option_value('winbar', winbar, { win = state.win })
 
-  -- Separator
-  table.insert(lines, string.rep('─', 60))
-
-  -- Mappings
+  -- Mappings only (no footer in buffer - it's in statusline)
   for _, line in ipairs(map_lines) do
     table.insert(lines, line)
   end
 
-  -- Footer
-  table.insert(lines, '')
-  table.insert(lines, string.rep('─', 60))
-  table.insert(lines, '  q:close  1-8:mode  Tab/]m:next  r:refresh')
+  -- Set statusline as fixed footer
+  local statusline = '%#ViewMapsFooter#  q:close  1-8:mode  Tab/]m:next  r:refresh%*'
+  vim.api.nvim_set_option_value('statusline', statusline, { win = state.win })
 
   -- Set buffer content
   vim.api.nvim_set_option_value('modifiable', true, { buf = state.buf })
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
   vim.api.nvim_set_option_value('modifiable', false, { buf = state.buf })
 
-  -- Apply highlights
+  -- Clear any old highlights
   vim.api.nvim_buf_clear_namespace(state.buf, ns_id, 0, -1)
-
-  -- Highlight footer
-  vim.api.nvim_buf_add_highlight(state.buf, ns_id, 'ViewMapsFooter', #lines - 1, 0, -1)
 end
 
 --- Open the floating window
@@ -206,6 +199,7 @@ function M.open(mode)
   vim.api.nvim_set_option_value('wrap', false, { win = state.win })
   vim.api.nvim_set_option_value('number', false, { win = state.win })
   vim.api.nvim_set_option_value('relativenumber', false, { win = state.win })
+  vim.api.nvim_set_option_value('winfixheight', true, { win = state.win })
 
   -- Set up keymaps and render
   setup_keymaps()
