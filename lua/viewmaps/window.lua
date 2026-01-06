@@ -49,42 +49,30 @@ local function get_win_opts()
   }
 end
 
---- Create mode tabs header
+--- Create winbar string with mode tabs (uses statusline syntax)
 ---@param current_mode string Currently selected mode
----@return string Header line
----@return table[] Highlight positions {col_start, col_end, hl_group}
-local function create_mode_tabs(current_mode)
+---@param count number Number of mappings
+---@return string Winbar string with highlights
+local function create_winbar(current_mode, count)
   local opts = config.get()
   local modes = opts.modes
   local parts = {}
-  local highlights = {}
-  local col = 2 -- start after initial padding
 
-  for i, mode in ipairs(modes) do
-    local mode_name = opts.mode_names[mode] or mode
+  for _, mode in ipairs(modes) do
     local short_name = mode:upper()
 
     if mode == current_mode then
-      table.insert(parts, '[' .. short_name .. ']')
-      table.insert(highlights, { col, col + #short_name + 2, 'ViewMapsActiveMode' })
+      table.insert(parts, '%#ViewMapsActiveMode#[' .. short_name .. ']%*')
     else
-      table.insert(parts, ' ' .. short_name .. ' ')
-      table.insert(highlights, { col, col + #short_name + 2, 'ViewMapsMode' })
-    end
-
-    col = col + #short_name + 3 -- mode char + brackets/spaces + space
-
-    if i < #modes then
-      table.insert(parts, ' ')
-      col = col + 1
+      table.insert(parts, '%#ViewMapsMode# ' .. short_name .. ' %*')
     end
   end
 
-  local header = '  ' .. table.concat(parts, '')
   local mode_name = opts.mode_names[current_mode] or current_mode
-  local count_str = ''
+  local tabs = table.concat(parts, ' ')
+  local info = string.format('%%#ViewMapsHeader# %s Mode - %d mapping(s)%%*', mode_name, count)
 
-  return header, highlights, mode_name
+  return '  ' .. tabs .. '  │' .. info
 end
 
 --- Set up buffer keymaps
@@ -131,22 +119,22 @@ local function render()
   if not state.buf or not vim.api.nvim_buf_is_valid(state.buf) then
     return
   end
+  if not state.win or not vim.api.nvim_win_is_valid(state.win) then
+    return
+  end
 
-  local opts = config.get()
   local mode = state.current_mode
   local lines = {}
 
-  -- Header with mode tabs
-  local header, header_hl, mode_name = create_mode_tabs(mode)
-  table.insert(lines, header)
-  table.insert(lines, '')
-
-  -- Mode info
+  -- Get mappings
   local map_lines, count = mappings.format_all(mode)
-  local info_line = string.format('  %s Mode - %d mapping(s)', mode_name, count)
-  table.insert(lines, info_line)
-  table.insert(lines, string.rep('─', 50))
-  table.insert(lines, '')
+
+  -- Set winbar with mode tabs and count (fixed header)
+  local winbar = create_winbar(mode, count)
+  vim.api.nvim_set_option_value('winbar', winbar, { win = state.win })
+
+  -- Separator
+  table.insert(lines, string.rep('─', 60))
 
   -- Mappings
   for _, line in ipairs(map_lines) do
@@ -155,24 +143,16 @@ local function render()
 
   -- Footer
   table.insert(lines, '')
-  table.insert(lines, string.rep('─', 50))
+  table.insert(lines, string.rep('─', 60))
   table.insert(lines, '  q:close  1-8:mode  Tab/]m:next  r:refresh')
 
   -- Set buffer content
-  vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
+  vim.api.nvim_set_option_value('modifiable', true, { buf = state.buf })
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
+  vim.api.nvim_set_option_value('modifiable', false, { buf = state.buf })
 
   -- Apply highlights
   vim.api.nvim_buf_clear_namespace(state.buf, ns_id, 0, -1)
-
-  -- Highlight mode tabs
-  for _, hl in ipairs(header_hl) do
-    vim.api.nvim_buf_add_highlight(state.buf, ns_id, hl[3], 0, hl[1], hl[2])
-  end
-
-  -- Highlight info line
-  vim.api.nvim_buf_add_highlight(state.buf, ns_id, 'ViewMapsHeader', 2, 0, -1)
 
   -- Highlight footer
   vim.api.nvim_buf_add_highlight(state.buf, ns_id, 'ViewMapsFooter', #lines - 1, 0, -1)
@@ -187,17 +167,19 @@ function M.open(mode)
 
   -- Create buffer
   state.buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(state.buf, 'buftype', 'nofile')
-  vim.api.nvim_buf_set_option(state.buf, 'bufhidden', 'wipe')
-  vim.api.nvim_buf_set_option(state.buf, 'filetype', 'viewmaps')
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = state.buf })
+  vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = state.buf })
+  vim.api.nvim_set_option_value('filetype', 'viewmaps', { buf = state.buf })
 
   -- Create window
   local win_opts = get_win_opts()
   state.win = vim.api.nvim_open_win(state.buf, true, win_opts)
 
   -- Window options
-  vim.api.nvim_win_set_option(state.win, 'cursorline', true)
-  vim.api.nvim_win_set_option(state.win, 'wrap', false)
+  vim.api.nvim_set_option_value('cursorline', true, { win = state.win })
+  vim.api.nvim_set_option_value('wrap', false, { win = state.win })
+  vim.api.nvim_set_option_value('number', false, { win = state.win })
+  vim.api.nvim_set_option_value('relativenumber', false, { win = state.win })
 
   -- Set up keymaps and render
   setup_keymaps()
