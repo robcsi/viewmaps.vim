@@ -44,35 +44,37 @@ local function get_win_opts()
     col = col,
     style = 'minimal',
     border = win_opts.border,
-    title = win_opts.title,
-    title_pos = win_opts.title_pos,
   }
 end
 
---- Create winbar string with mode tabs (uses statusline syntax)
+--- Create mode tabs string for window title
 ---@param current_mode string Currently selected mode
----@param count number Number of mappings
----@return string Winbar string with highlights
-local function create_winbar(current_mode, count)
+---@return string Title string
+local function create_title(current_mode)
   local opts = config.get()
   local modes = opts.modes
   local parts = {}
 
   for _, mode in ipairs(modes) do
     local short_name = mode:upper()
-
     if mode == current_mode then
-      table.insert(parts, '%#ViewMapsActiveMode#[' .. short_name .. ']%*')
+      table.insert(parts, '[' .. short_name .. ']')
     else
-      table.insert(parts, '%#ViewMapsMode# ' .. short_name .. ' %*')
+      table.insert(parts, ' ' .. short_name .. ' ')
     end
   end
 
-  local mode_name = opts.mode_names[current_mode] or current_mode
-  local tabs = table.concat(parts, ' ')
-  local info = string.format('%%#ViewMapsHeader# %s Mode - %d mapping(s)%%*', mode_name, count)
+  return ' ' .. table.concat(parts, ' ') .. ' '
+end
 
-  return '  ' .. tabs .. '  │' .. info
+--- Create winbar string with mode info
+---@param current_mode string Currently selected mode
+---@param count number Number of mappings
+---@return string Winbar string with highlights
+local function create_winbar(current_mode, count)
+  local opts = config.get()
+  local mode_name = opts.mode_names[current_mode] or current_mode
+  return string.format('  %%#ViewMapsHeader#%s Mode%%* - %d mapping(s)', mode_name, count)
 end
 
 --- Set up buffer keymaps
@@ -129,7 +131,11 @@ local function render()
   -- Get mappings
   local map_lines, count = mappings.format_all(mode)
 
-  -- Set winbar with mode tabs and count (fixed header)
+  -- Set window title with mode tabs
+  local title = create_title(mode)
+  vim.api.nvim_win_set_config(state.win, { title = title, title_pos = 'center' })
+
+  -- Set winbar with mode info (fixed below title)
   local winbar = create_winbar(mode, count)
   vim.api.nvim_set_option_value('winbar', winbar, { win = state.win })
 
